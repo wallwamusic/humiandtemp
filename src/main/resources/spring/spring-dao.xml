@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+	<context:component-scan base-package="com.codelink.humiandtemp.dao"/>
+	
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!--配置数据库连接池-->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="driverClassName" value="${driverClassName}"/>
+		<property name="url" value="${jdbcUrl}"/>
+		<property name="username" value="${user}"/>
+		<property name="password" value="${password}"/>
+	</bean>
+
+	<!--配置事务管理-->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 注入数据库连接池 -->
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+
+	<!--配置SqlSessionFactory对象-->
+	<bean id="SqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 读取mybatis的核心文件 -->
+		<property name="configLocation" value="classpath:mybatis/mybatis.xml"></property>
+		<!-- 配置数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 加载映射文件 -->
+		<property name="mapperLocations" value="classpath:mybatis/mappers/*.xml"></property>
+	</bean>
+
+
+	<!--配置扫描Dao接口包，动态实现Dao接口，注入到spring容器中-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="SqlSessionFactoryBean"></property>
+		<!-- 持久层的接口所在的包 -->
+		<property name="basePackage" value="com.codelink.humiandtemp.dao"></property>
+
+	</bean>
+
+
+	
+</beans>
